@@ -2,7 +2,6 @@ from typing import Dict
 from datetime import date, timedelta
 
 from utilities import get_logger, get_values
-from config import currencies_id, url
 from create_connect import get_mysql_connection
 
 conn = get_mysql_connection()
@@ -16,6 +15,7 @@ def get_data_few_days(days: int, id_currencies: Dict):
     :param days: amount of days
     :param id_currencies: currencies id to get the rate
     """
+    url = 'http://www.cbr.ru/scripts/XML_daily.asp?date_req='
     for day in range(days):
         historic_date = date.today() - timedelta(days=day)
         date_str = historic_date.strftime('%d/%m/%Y')
@@ -41,5 +41,10 @@ def get_data_few_days(days: int, id_currencies: Dict):
 
 
 if __name__ == '__main__':
+    currencies_id = {
+        'USD': 'R01235',
+        'EUR': 'R01239',
+        'CNY': 'R01375',
+    }
     get_data_few_days(365, currencies_id)
 

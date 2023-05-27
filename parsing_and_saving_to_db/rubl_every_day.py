@@ -1,7 +1,6 @@
 from typing import Dict
 from datetime import date
 
-from config import currencies_id, url
 from utilities import get_logger, get_values
 from create_connect import get_mysql_connection
 
@@ -16,6 +15,7 @@ def get_data_every_day(id_currencies: Dict):
     """Getting data on exchange rates every day
     :param id_currencies: currencies id to get the rate
     """
+    url = 'http://www.cbr.ru/scripts/XML_daily.asp?date_req='
     today_date = date.today()
     str_date = today_date.strftime('%d/%m/%Y')
     source = url + str_date
@@ -41,4 +41,9 @@ def get_data_every_day(id_currencies: Dict):
 
 
 if __name__ == '__main__':
+    currencies_id = {
+        'USD': 'R01235',
+        'EUR': 'R01239',
+        'CNY': 'R01375',
+    }
     get_data_every_day(currencies_id)
