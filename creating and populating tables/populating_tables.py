@@ -29,7 +29,9 @@ query_insert_source_type_3nf = """
         INSERT INTO source_type_3nf
             (source_id, source)
         VALUES
-            (1, 'ЦБР');
+            (1, 'ЦБР'),
+            (2, 'currencylayer')
+            ;
     """
 cursor.execute(query_insert_source_type_3nf)
 conn.commit()
