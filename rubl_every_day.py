@@ -27,7 +27,7 @@ def get_data_every_day(id_currencies: Dict):
                                     (pub_date, abbreviation1, abbreviation2, extrange_rate, source)
                                     values ("{today_date}", "{id_curr}", "RUB", {value}, "ЦБР");"""
             cursor.execute(query)
-        except BaseException as ex:
+        except Exception as ex:
             logger.error(f'Error: {ex}')
 
     try:
@@ -36,7 +36,7 @@ def get_data_every_day(id_currencies: Dict):
                         values ("{today_date}", "RUB", "RUB", 1, "ЦБР")"""
         cursor.execute(query_rub)
         conn.commit()
-    except BaseException as ex:
+    except Exception as ex:
         logger.error(f'Error: {ex}')
 
 

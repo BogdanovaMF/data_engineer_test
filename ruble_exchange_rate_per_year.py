@@ -28,7 +28,7 @@ def get_data_few_days(days: int, id_currencies: Dict):
                             (pub_date, abbreviation1, abbreviation2, extrange_rate, source)
                             values ("{historic_date}", "{id_curr}", "RUB", {value}, "ЦБР");"""
                 cursor.execute(query)
-            except BaseException as ex:
+            except Exception as ex:
                 logger.error(f'Error: {ex}')
         try:
             query_rub = f"""INSERT INTO stage_currencies
@@ -36,7 +36,7 @@ def get_data_few_days(days: int, id_currencies: Dict):
                             values ("{historic_date}", "RUB", "RUB", 1, "ЦБР")"""
             cursor.execute(query_rub)
             conn.commit()
-        except BaseException as ex:
+        except Exception as ex:
             logger.error(f'Error: {ex}')
 
 
