@@ -22,16 +22,24 @@ def get_data_few_days(days: int, id_currencies: Dict):
         source_url = url + date_str
         for id_curr in id_currencies:
             value = get_values(source_url, id_currencies[id_curr])
-            query = f"""INSERT INTO stage_currencies
+            logger.info('Data received successfully')
+            try:
+                query = f"""INSERT INTO stage_currencies
                             (pub_date, abbreviation1, abbreviation2, extrange_rate, source)
                             values ("{historic_date}", "{id_curr}", "RUB", {value}, "ЦБР");"""
-            cursor.execute(query)
-        query_rub = f"""INSERT INTO stage_currencies
+                cursor.execute(query)
+            except BaseException as ex:
+                logger.error(f'Error: {ex}')
+        try:
+            query_rub = f"""INSERT INTO stage_currencies
                             (pub_date, abbreviation1, abbreviation2, extrange_rate, source)
                             values ("{historic_date}", "RUB", "RUB", 1, "ЦБР")"""
-        cursor.execute(query_rub)
-        conn.commit()
+            cursor.execute(query_rub)
+            conn.commit()
+        except BaseException as ex:
+            logger.error(f'Error: {ex}')
 
 
-get_data_few_days(30, currencies_id)
+if __name__ == '__main__':
+    get_data_few_days(365, currencies_id)
 
