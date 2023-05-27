@@ -3,8 +3,8 @@ from datetime import date
 
 import requests
 
-from utils import get_logger
-from create_connect1 import get_mysql_connection
+from utilities import get_logger
+from create_connect import get_mysql_connection
 from dotenv import load_dotenv
 
 load_dotenv()

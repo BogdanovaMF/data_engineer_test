@@ -2,7 +2,7 @@ from typing import Dict
 from datetime import date
 
 from config import currencies_id, url
-from utils import get_logger, get_values
+from utilities import get_logger, get_values
 from create_connect import get_mysql_connection
 
 

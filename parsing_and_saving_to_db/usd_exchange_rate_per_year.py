@@ -5,8 +5,8 @@ from datetime import date, timedelta
 import currencylayer
 from dotenv import load_dotenv
 
-from utils import get_logger
-from create_connect1 import get_mysql_connection
+from utilities import get_logger
+from create_connect import get_mysql_connection
 
 conn = get_mysql_connection()
 cursor = conn.cursor()
