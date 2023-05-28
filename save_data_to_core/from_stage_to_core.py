@@ -1,7 +1,7 @@
-from utils import get_logger
-from create_connect import get_mysql_connection
+from utils.logger import get_logger
+from utils.mysql import mysql_connect
 
-conn = get_mysql_connection()
+conn = mysql_connect()
 cursor = conn.cursor()
 
 logger = get_logger()
@@ -14,8 +14,8 @@ def insert_to_core(table_name_to: str, table_name_from):
     """
     query = f"""
         INSERT INTO {table_name_to} 
-            (date, source, abbreviation1, abbreviation2, exchange_rate)
-        SELECT pub_date,source, abbreviation1, abbreviation2, extrange_rate 
+            (exchange_date, source_id, currency_source_id, currency_destination_id, exchange_rate, load_rout_timestamp)
+        SELECT exchange_date,source_id, currency_source_id, currency_destination_id, extrange_rate, load_rout_timestamp
         FROM {table_name_from};
         """
     cursor.execute(query)
@@ -27,12 +27,16 @@ def update_core(table_name: str):
     :param table_name: table names to retrieve data
     """
     queries = f"""
-        UPDATE {table_name} SET source_id=2 WHERE source='currencylayer';
-        UPDATE {table_name} SET source_id=1 WHERE source='ЦБР';
-        UPDATE {table_name} SET language_id=1 WHERE abbreviation1='USD';
-        UPDATE {table_name} SET language_id=2 WHERE abbreviation1='RUB';
-        UPDATE {table_name} SET language_id=4 WHERE abbreviation1='EUR';
-        UPDATE {table_name} SET language_id=3 WHERE abbreviation1='CNY';
+        UPDATE {table_name} SET language_id=1 WHERE currency_source_id='USD';
+        UPDATE {table_name} SET language_id=2 WHERE currency_source_id='RUB';
+        UPDATE {table_name} SET language_id=4 WHERE currency_source_id='EUR';
+        UPDATE {table_name} SET language_id=3 WHERE currency_source_id='CNY';
     """
     cursor.execute(queries)
     conn.commit()
+
+
+if __name__ == '__main__':
+    insert_to_core('stage_currencies', 'exchange_rates')
+    update_core('exchange_rates')
+

@@ -9,7 +9,7 @@ stage_currencies_table = """
             currency_source_id VARCHAR(10),
             currency_destination_id VARCHAR(10),
             extrange_rate FLOAT,
-            source_it INT,
+            source_id INT,
             load_rout_timestamp TIMESTAMP
         );
     """
@@ -44,7 +44,7 @@ conn.commit()
 exchange_rates_table = """
         CREATE TABLE IF NOT EXISTS exchange_rates (
             id SERIAL PRIMARY KEY,
-            date DATE,
+            exchange_date DATE,
             language_id INT,
             source_id INT,
             currency_source_id VARCHAR(10),
