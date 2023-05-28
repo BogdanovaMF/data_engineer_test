@@ -1,5 +1,5 @@
 from utils import get_logger
-from create_connect1 import get_mysql_connection
+from create_connect import get_mysql_connection
 
 conn = get_mysql_connection()
 cursor = conn.cursor()
