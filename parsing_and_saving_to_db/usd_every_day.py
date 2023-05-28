@@ -2,10 +2,11 @@ import os
 from datetime import date
 
 import requests
+from dotenv import load_dotenv
 
 from utilities import get_logger
 from create_connect import get_mysql_connection
-from dotenv import load_dotenv
+
 
 load_dotenv()
 
@@ -20,7 +21,8 @@ def get_data_usd_every_day(url: str):
     :param url: link to get data on exchange rates
     """
     responce = requests.get(url).json()
-    id_currencies = responce['quotes']
+    currencies = responce['quotes']
+    id_currencies = {'RUB': currencies['USDRUB'], 'EUR': currencies['USDEUR'], 'CNY': currencies['USDCNY']}
 
     for id_curr in id_currencies:
         logger.info('Data received successfully')

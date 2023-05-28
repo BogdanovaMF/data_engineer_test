@@ -31,7 +31,7 @@ def get_data_insert_to_db(days: int):
         RUB = currencies['USDRUB']
         EUR = currencies['USDEUR']
         CNY = currencies['USDCNY']
-        id_currencies = {'USDRUB': RUB, 'USDEUR': EUR, 'USDCNY': CNY}
+        id_currencies = {'RUB': RUB, 'EUR': EUR, 'CNY': CNY}
         for id_curr in id_currencies:
             value = id_currencies[id_curr]
             try:

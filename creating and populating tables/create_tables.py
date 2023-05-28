@@ -46,6 +46,7 @@ exchange_rates_3nf_table = """
             date DATE,
             language_id INT,
             source_id INT,
+            source VARCHAR(20),
             abbreviation1 VARCHAR(10),
             abbreviation2 VARCHAR(10),
             exchange_rate FLOAT,
