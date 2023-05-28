@@ -38,12 +38,3 @@ def get_data_every_day(id_currencies: Dict):
         conn.commit()
     except Exception as ex:
         logger.error(f'Error: {ex}')
-
-
-if __name__ == '__main__':
-    currencies_id = {
-        'USD': 'R01235',
-        'EUR': 'R01239',
-        'CNY': 'R01375',
-    }
-    get_data_every_day(currencies_id)

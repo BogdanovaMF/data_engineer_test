@@ -42,9 +42,3 @@ def get_data_usd_every_day(url: str):
         conn.commit()
     except Exception as ex:
         logger.error(f'Error: {ex}')
-
-
-if __name__ == '__main__':
-    api = os.getenv('API')
-    url = f'http://apilayer.net/api/live?access_key={api}&currencies=RUB,EUR,CNY&source=USD&format=1'
-    get_data_usd_every_day(url=url)
