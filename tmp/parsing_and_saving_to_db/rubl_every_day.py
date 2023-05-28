@@ -2,7 +2,7 @@ from typing import Dict
 from datetime import date
 
 from utilities import get_logger, get_values
-from create_connect import get_mysql_connection
+from create_connect1 import get_mysql_connection
 
 
 conn = get_mysql_connection()
@@ -21,6 +21,7 @@ def get_data_every_day(id_currencies: Dict):
     source = url + str_date
     for id_curr in id_currencies:
         value = get_values(source, id_currencies[id_curr])
+        print(value)
         logger.info('Data received successfully')
         try:
             query = f"""INSERT INTO stage_currencies
@@ -38,3 +39,5 @@ def get_data_every_day(id_currencies: Dict):
         conn.commit()
     except Exception as ex:
         logger.error(f'Error: {ex}')
+
+
