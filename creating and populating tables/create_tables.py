@@ -1,22 +1,23 @@
-from create_connect import get_mysql_connection
+from utils.mysql import mysql_connect
 
-conn = get_mysql_connection()
+conn = mysql_connect()
 cursor = conn.cursor()
 
 stage_currencies_table = """
         CREATE TABLE IF NOT EXISTS stage_currencies (
-            pub_date DATE,
-            abbreviation1 VARCHAR(10),
-            abbreviation2 VARCHAR(10),
+            exchange_date DATE,
+            currency_source_id VARCHAR(10),
+            currency_destination_id VARCHAR(10),
             extrange_rate FLOAT,
-            source VARCHAR(20)
+            source_it INT,
+            load_rout_timestamp TIMESTAMP
         );
     """
 cursor.execute(stage_currencies_table)
 conn.commit()
 
 source_table = """
-        CREATE TABLE IF NOT EXISTS source_type_3nf (
+        CREATE TABLE IF NOT EXISTS source_type (
             source_id INT PRIMARY KEY,
             source VARCHAR(20)
             )
@@ -27,9 +28,9 @@ cursor.execute(source_table)
 conn.commit()
 
 languages_3nf_table = """
-        CREATE TABLE IF NOT EXISTS languages_3nf (
+        CREATE TABLE IF NOT EXISTS languages (
             language_id INT PRIMARY KEY,
-            abbreviation VARCHAR(50),
+            currency_id VARCHAR(20),
             curr_name_en VARCHAR(50),
             curr_name_ger VARCHAR(50),
             curr_name_rus VARCHAR(50),
@@ -40,22 +41,22 @@ languages_3nf_table = """
 cursor.execute(languages_3nf_table)
 conn.commit()
 
-exchange_rates_3nf_table = """
-        CREATE TABLE IF NOT EXISTS exchange_rates_3nf (
+exchange_rates_table = """
+        CREATE TABLE IF NOT EXISTS exchange_rates (
             id SERIAL PRIMARY KEY,
             date DATE,
             language_id INT,
             source_id INT,
-            source VARCHAR(20),
-            abbreviation1 VARCHAR(10),
-            abbreviation2 VARCHAR(10),
+            currency_source_id VARCHAR(10),
+            currency_destination_id VARCHAR(10),
             exchange_rate FLOAT,
+            load_rout_timestamp TIMESTAMP,
             FOREIGN KEY (language_id)  REFERENCES languages_3nf(language_id),
             FOREIGN KEY (source_id)  REFERENCES source_type_3nf(source_id)
             )
             ENGINE=InnoDB;
     """
 
-cursor.execute(exchange_rates_3nf_table)
+cursor.execute(exchange_rates_table)
 conn.commit()
 

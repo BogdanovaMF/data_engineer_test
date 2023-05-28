@@ -1,7 +1,7 @@
 import argparse
 import requests
 from typing import Optional, Tuple
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 from pymysql import Connection
 from bs4 import BeautifulSoup as bs
@@ -86,7 +86,7 @@ if __name__ == '__main__':
         historic_date = date.today() - timedelta(days=day)
         for curr in currencies_id:
             value = crb.parse_and_save(historic_date, currencies_id[curr])
-            data = (date.today(), curr, "RUB", {value}, "ЦБР")
+            data = (date.today(), curr, "RUB", {value}, 1, datetime.now())
             crb.insert_data_into_table(args['table'], data)
-        data2 = (historic_date, "RUB", "RUB", 1, "ЦБР")
+        data2 = (historic_date, "RUB", "RUB", 1, 1, datetime.now())
         crb.insert_data_into_table(args['table'], data2)

@@ -1,7 +1,7 @@
 import os
 import argparse
 from typing import Optional, Tuple, Dict
-from datetime import date, timedelta, time
+from datetime import date, timedelta, time, datetime
 
 import currencylayer
 from dotenv import load_dotenv
@@ -90,7 +90,7 @@ if __name__ == '__main__':
         historic_date = date.today() - timedelta(days=day)
         for curr in currencies_id:
             value = curr_layer.parse_and_save(historic_date, currencies_id[curr])
-            data = (date.today(), curr, "USD", {value}, "ЦБР")
+            data = (date.today(), curr, "USD", {value}, 2, datetime.now())
             curr_layer.insert_data_into_table(args['table'], data)
-        data2 = (historic_date, "USD", "USD", 1, "currencylayer")
+        data2 = (historic_date, "USD", "USD", 1, 2, datetime.now())
         curr_layer.insert_data_into_table(args['table'], data2)
