@@ -51,8 +51,8 @@ exchange_rates_table = """
             currency_destination_id VARCHAR(10),
             exchange_rate FLOAT,
             load_rout_timestamp TIMESTAMP,
-            FOREIGN KEY (language_id)  REFERENCES languages_3nf(language_id),
-            FOREIGN KEY (source_id)  REFERENCES source_type_3nf(source_id)
+            FOREIGN KEY (language_id)  REFERENCES languages(language_id),
+            FOREIGN KEY (source_id)  REFERENCES source_type(source_id)
             )
             ENGINE=InnoDB;
     """
