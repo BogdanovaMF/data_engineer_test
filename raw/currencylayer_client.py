@@ -30,7 +30,7 @@ class CurrencylayerClient:
         self.cursor = self.conn.cursor()
 
     @staticmethod
-    def _request_and_parse_history(historic_date: str) -> Dict:
+    def request_and_parse_history(historic_date: str) -> Dict:
         """Parsing data from the site
         :param historic_date: exchange rate conversion date
         :return: currency values dict
@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
     for day in range(int(args['days'])):
         historic_date = date.today() - timedelta(days=day)
-        currencies_id = curr_layer._request_and_parse_history(args['days'], historic_date)
+        currencies_id = curr_layer.request_and_parse_history(args['days'], historic_date)
         for curr in currencies_id:
             value = currencies_id[curr]
             data = (date.today(), curr, "USD", value, 2, datetime.now())
