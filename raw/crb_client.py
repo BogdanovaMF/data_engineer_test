@@ -1,6 +1,6 @@
 import argparse
 import requests
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict
 from datetime import date, timedelta, datetime
 
 from pymysql import Connection
@@ -22,14 +22,19 @@ def parse_args():
 
 
 class CrbClient:
+    """Class for getting the exchange rate from https://www.cbr.ru/"""
     URL = "http://www.cbr.ru/scripts/XML_daily.asp?date_req="
 
     def __init__(self, conn: Optional[Connection]):
         self.conn = conn if conn else mysql_connect()
         self.cursor = self.conn.cursor()
 
-    def parse_and_save(self, date, id_currencies):
-        """запись и сохранение в дб"""
+    def parse_and_save(self, date: date, id_currencies: Dict) -> float:
+        """Parsing data and storing
+        :param date: exchange date
+        :param id_currencies: currencies id dict
+        :return: exchange rate on a given date
+        """
         date_str = date.strftime('%d/%m/%Y')
         source_url = self.URL + date_str
         value = self._request_and_parse(source_url, id_currencies)
@@ -37,7 +42,12 @@ class CrbClient:
         return value
 
     @staticmethod
-    def _request_and_parse(url: str, currencies_id) -> float:
+    def _request_and_parse(url: str, currencies_id: str) -> float:
+        """Parsing data from the site
+        :param url: linc source site
+        :currencies_id: currency id
+        :return: currency value
+        """
         try:
             response = requests.get(url, timeout=5)
             currency_content = response.text
@@ -56,14 +66,15 @@ class CrbClient:
         """
 
         self.cursor.execute(f"SELECT * FROM {table_name} LIMIT 0")  # select columns name from table
-        col_names = [col.name for col in self.cursor.description if col.name != 'id']  # identified columns without id
+        col_names = [i[0] for i in self.cursor.description]
+
         try:
             guery_insert_data = f"""
-                INSERT INTO {table_name} 
+                INSERT INTO {table_name}
                     ({', '.join(col_names)})
-                VALUES ({', '.join(['%s'] * len(col_names))});
+                    VALUES ({', '.join(['%s'] * len(col_names))});
             """
-            self.cursor.executemany(guery_insert_data, data)
+            self.cursor.executemany(guery_insert_data, [data])
             self.conn.commit()
             logger.info(f'Inserting values into a table {table_name} completed successfully')
         except Exception as ex:
@@ -82,11 +93,11 @@ if __name__ == '__main__':
     }
 
     crb = CrbClient(conn=mysql_connect())
-    for day in range(args['days']):
+    for day in range(int(args['days'])):
         historic_date = date.today() - timedelta(days=day)
         for curr in currencies_id:
             value = crb.parse_and_save(historic_date, currencies_id[curr])
-            data = (historic_date, curr, "RUB", {value}, 1, datetime.now())
+            data = (historic_date, curr, "RUB", value, 1, datetime.now())
             crb.insert_data_into_table(args['table'], data)
         data2 = (historic_date, "RUB", "RUB", 1, 1, datetime.now())
         crb.insert_data_into_table(args['table'], data2)

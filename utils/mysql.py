@@ -7,10 +7,10 @@ load_dotenv()
 
 def mysql_connect():
     conn = pymysql.connect(
-        host=os.getenv('DB_HOST'),
-        user=os.getenv('DB_USER'),
-        database=os.getenv('DB_NAME'),
-        passwd=os.getenv('DB_PASSWORD')
+        host='localhost',
+        user='dba',
+        database='mysql',
+        passwd='dbaPass'
     )
     return conn
 
