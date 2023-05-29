@@ -86,7 +86,7 @@ if __name__ == '__main__':
         historic_date = date.today() - timedelta(days=day)
         for curr in currencies_id:
             value = crb.parse_and_save(historic_date, currencies_id[curr])
-            data = (date.today(), curr, "RUB", {value}, 1, datetime.now())
+            data = (historic_date, curr, "RUB", {value}, 1, datetime.now())
             crb.insert_data_into_table(args['table'], data)
         data2 = (historic_date, "RUB", "RUB", 1, 1, datetime.now())
         crb.insert_data_into_table(args['table'], data2)
