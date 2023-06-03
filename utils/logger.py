@@ -15,6 +15,3 @@ def get_logger():
     fh.setFormatter(logging.Formatter("%(levelname)s  %(asctime)s: %(message)s"))
     logger.addHandler(fh)
     return logger
-
-
-logger = get_logger()
