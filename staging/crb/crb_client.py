@@ -62,7 +62,7 @@ class CrbClient:
             logger.error(f'Some error occurred: {ex}')
 
     def insert_data_into_table(self, table_name: str, data: Tuple) -> None:
-        """Create temp table. Insert data into a table.
+        """Insert data into a table.
         :param table_name: tables name for insert values
         :param data: data to write to the table
         """

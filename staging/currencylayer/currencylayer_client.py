@@ -38,7 +38,7 @@ class CurrencylayerClient:
         for curr in currencies:
             value = currencies[curr]
             data = (date, curr, "USD", value, self.source, datetime.now())
-            self.insert_data_into_table(table_name, data)
+            self._insert_data_into_table(table_name, data)
 
     @staticmethod
     def _request_and_parse(date: str, curr_from_to: List) -> Dict:
@@ -62,8 +62,8 @@ class CurrencylayerClient:
         except Exception as ex:
             logger.error(f'Error: {ex}')
 
-    def insert_data_into_table(self, table_name: str, data: Tuple) -> None:
-        """Create temp table. Insert data into a table.
+    def _insert_data_into_table(self, table_name: str, data: Tuple) -> None:
+        """Insert data into a table.
         :param table_name: tables name for insert values
         :param data: data to write to the table
         """
