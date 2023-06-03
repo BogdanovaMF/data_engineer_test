@@ -4,6 +4,7 @@ import argparse
 from typing import Optional, Dict, Tuple
 from datetime import datetime, timedelta, date
 
+import pandas as pd
 from pymysql import Connection
 from bs4 import BeautifulSoup as bs
 
@@ -14,7 +15,8 @@ from utils.mysql import mysql_connect
 def parse_args():
     """Getting  data from the user from the command line for searching"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('--days', required=True)
+    parser.add_argument('--date_from')
+    parser.add_argument('--date_to')
     parser.add_argument('--table', required=True)
     args = parser.parse_args()
     return vars(args)
@@ -96,7 +98,13 @@ if __name__ == '__main__':
         'CNY': 'R01375',
         }
 
-    for day in range(int(args['days'])):
-        historic_date = date.today() - timedelta(days=day)
+    if args['date_from'] is None and args['date_to'] is None:
+        historic_date = date.today() - timedelta(days=0)
         date_str = historic_date.strftime('%d/%m/%Y')
         crb.parse_and_save(date_str, currencies_id, args['table'])
+
+    else:
+        daterange = pd.date_range(start=args['date_from'], end=args['date_to'])
+        for date in daterange:
+            date_str = date.strftime('%d/%m/%Y')
+            crb.parse_and_save(date_str, currencies_id, args['table'])

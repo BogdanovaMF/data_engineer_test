@@ -1,8 +1,10 @@
 import os
 import argparse
+import time
 from datetime import datetime, date, timedelta
 from typing import Optional, Dict, List, Tuple
 
+import pandas as pd
 import currencylayer
 from dotenv import load_dotenv
 from pymysql import Connection
@@ -14,7 +16,8 @@ from utils.mysql import mysql_connect
 def parse_args():
     """Getting  data from the user from the command line for searching"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('--days', required=True)
+    parser.add_argument('--date_from')
+    parser.add_argument('--date_to')
     parser.add_argument('--table', required=True)
     args = parser.parse_args()
     return vars(args)
@@ -93,7 +96,14 @@ if __name__ == '__main__':
     curr_layer = CurrencylayerClient(conn=mysql_connect())
     currencies_id = ['USDRUB', 'USDEUR', 'USDCNY']
 
-    for day in range(int(args['days'])):
-        historic_date = date.today() - timedelta(days=day)
+    if args['date_from'] is None and args['date_to'] is None:
+        historic_date = date.today() - timedelta(days=0)
         date_str = historic_date.strftime('%Y-%m-%d')
-        curr_layer.parse_and_save(date_str, currencies_id, 'stage_currencies')
+        curr_layer.parse_and_save(date_str, currencies_id, args['table'])
+
+    else:
+        daterange = pd.date_range(start=args['date_from'], end=args['date_to'])
+        for date in daterange:
+            date_str = date.strftime('%Y-%m-%d')
+            curr_layer.parse_and_save(date_str, currencies_id, args['table'])
+            time.sleep(1)
