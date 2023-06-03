@@ -13,3 +13,4 @@ def mysql_connect():
         passwd=os.getenv('DB_PASSWORD')
     )
     return conn
+
