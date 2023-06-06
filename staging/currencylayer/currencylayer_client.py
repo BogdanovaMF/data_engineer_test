@@ -1,8 +1,8 @@
 import os
-import argparse
 import time
-from datetime import datetime, date, timedelta
-from typing import Optional, Dict, List, Tuple
+import argparse
+from datetime import datetime, date
+from typing import Optional, Dict, List
 
 import pandas as pd
 import currencylayer
@@ -10,82 +10,61 @@ from dotenv import load_dotenv
 from pymysql import Connection
 
 from utils.logger import get_logger
-from utils.mysql import mysql_connect
+from utils.mysql import mysql_connect, insert_data_into_table
 
 
 def parse_args():
     """Getting  data from the user from the command line for searching"""
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--date_from')
-    parser.add_argument('--date_to')
-    parser.add_argument('--table', required=True)
+    parser = argparse.ArgumentParser(description='Getting the range of dates for currency conversion and the name of '
+                                                 'the table in which the data on exchange rates will be entered')
+    parser.add_argument('--date_from', help='starting date from which exchange rate information will be collected')
+    parser.add_argument('--date_to', help='end date from which exchange rate information will be collected')
+    parser.add_argument('--table_name', required=True, help='tables name for insert values')
     args = parser.parse_args()
     return vars(args)
 
 
 class CurrencylayerClient:
     """Class for getting the exchange rate from https://currencylayer.com/"""
-    source = 'currencylayer'
+    source_code = 'currencylayer'
 
     def __init__(self, conn: Optional[Connection]):
         self.conn = conn if conn else mysql_connect()
         self.cursor = self.conn.cursor()
 
-    def parse_and_save(self, date: str, currencies_id: List, table_name: str) -> None:
+    def parse_and_save(self, date: str, currency_codes: List, table_name: str) -> None:
         """Parsing data from the site and saving to the database
          :param date: currency conversion date
-         :param currencies_id: list with currencies id
+         :param currency_codes: list with currencies codes
          :param table_name: tables name for insert values
          """
-        currencies = self._request_and_parse(date, currencies_id)
+        currencies = self._request_and_parse(date, currency_codes)
         for curr in currencies:
             value = currencies[curr]
-            data = (date, curr, "USD", value, self.source, datetime.now())
-            self._insert_data_into_table(table_name, data)
+            data = (date, curr, "USD", value, self.source_code, datetime.now())
+            insert_data_into_table(table_name, data)
 
     @staticmethod
-    def _request_and_parse(date: str, curr_from_to: List) -> Dict:
+    def _request_and_parse(date: str, currency_codes: List) -> Dict:
         """Parsing data from the site
         :param date: exchange rate conversion date
-        :param curr_from_to: list with currencies id
-        :return: currency values dict
+        :param currency_codes: list with currencies code
+        :return: dict with currency id and currency rate
         """
         try:
-            id_currencies = {}
+            exchange_rates = {}
             exchange_rate = currencylayer.Client(access_key=os.getenv('API'))
             data = exchange_rate.historical(date=date, base_currency="USD")
             currencies = data['quotes']
-            for i in curr_from_to:
+            for i in currency_codes:
                 value = currencies[i]
-                id_currencies[i[3:]] = value
+                exchange_rates[i[3:]] = value
                 logger.info(f'From {i[:3]} to {i[3:]} exchange rate = {value}')
 
-            return id_currencies
+            return exchange_rates
 
         except Exception as ex:
             logger.error(f'Error: {ex}')
-
-    def _insert_data_into_table(self, table_name: str, data: Tuple) -> None:
-        """Insert data into a table.
-        :param table_name: tables name for insert values
-        :param data: data to write to the table
-        """
-
-        self.cursor.execute(f"SELECT * FROM {table_name} LIMIT 0")  # select columns name from table
-        col_names = [i[0] for i in self.cursor.description]
-
-        try:
-            guery_insert_data = f"""
-                INSERT INTO {table_name}
-                    ({', '.join(col_names)})
-                    VALUES ({', '.join(['%s'] * len(col_names))});
-            """
-            self.cursor.executemany(guery_insert_data, [data])
-            self.conn.commit()
-            logger.info(f'Inserting values {data} into a table {table_name} completed successfully')
-        except Exception as ex:
-            logger.error(f'Some error occurred: {ex}')
-            self.conn.rollback()
             raise ex
 
 
@@ -94,16 +73,15 @@ if __name__ == '__main__':
     logger = get_logger()
     load_dotenv()
     curr_layer = CurrencylayerClient(conn=mysql_connect())
-    currencies_id = ['USDRUB', 'USDEUR', 'USDCNY']
+    currency_codes = ['USDRUB', 'USDEUR', 'USDCNY']
 
     if args['date_from'] is None and args['date_to'] is None:
-        historic_date = date.today() - timedelta(days=0)
-        date_str = historic_date.strftime('%Y-%m-%d')
-        curr_layer.parse_and_save(date_str, currencies_id, args['table'])
+        date_str = date.today().strftime('%Y-%m-%d')
+        curr_layer.parse_and_save(date_str, currency_codes, args['table_name'])
 
     else:
         daterange = pd.date_range(start=args['date_from'], end=args['date_to'])
         for date in daterange:
             date_str = date.strftime('%Y-%m-%d')
-            curr_layer.parse_and_save(date_str, currencies_id, args['table'])
+            curr_layer.parse_and_save(date_str, currency_codes, args['table_name'])
             time.sleep(1)
