@@ -57,7 +57,6 @@ class CrbClient:
                 date_ = datetime.strptime(date_str, "%d/%m/%Y").date()
                 for curr in currencies:
                     value = currencies[curr]
-                    print(value)
                     data = (date_, curr, self.base_currency_code, value, self.source_code, datetime.now())
                     insert_data_into_table(table_name, data)
 
