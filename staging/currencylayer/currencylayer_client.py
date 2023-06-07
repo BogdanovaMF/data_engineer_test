@@ -1,7 +1,7 @@
 import os
 import time
 import argparse
-from datetime import datetime, date
+from datetime import datetime
 from typing import Optional, Dict, List
 
 import pandas as pd
@@ -17,9 +17,9 @@ def parse_args():
     """Getting  data from the user from the command line for searching"""
     parser = argparse.ArgumentParser(description='Getting the range of dates for currency conversion and the name of '
                                                  'the table in which the data on exchange rates will be entered')
-    parser.add_argument('--date_from', help='starting date from which exchange rate information will be collected')
-    parser.add_argument('--date_to', help='end date from which exchange rate information will be collected')
-    parser.add_argument('--table_name', required=True, help='tables name for insert values')
+    parser.add_argument('--date_from', help='The beginning of the period for extracting the exchange rate')
+    parser.add_argument('--date_to', help='End of period to retrieve exchange rates')
+    parser.add_argument('--table_name', required=True, help='Tables name for insert values')
     args = parser.parse_args()
     return vars(args)
 
@@ -27,25 +27,41 @@ def parse_args():
 class CurrencylayerClient:
     """Class for getting the exchange rate from https://currencylayer.com/"""
     source_code = 'currencylayer'
+    base_currency_code = 'USD'
 
     def __init__(self, conn: Optional[Connection]):
         self.conn = conn if conn else mysql_connect()
         self.cursor = self.conn.cursor()
 
-    def parse_and_save(self, date: str, currency_codes: List, table_name: str) -> None:
+    def parse_and_save(self, currency_codes: List[str], table_name: str, date_from: Optional[str] = None,
+                       date_to: Optional[str] = None) -> None:
         """Parsing data from the site and saving to the database
-         :param date: currency conversion date
+         :param date_from: the beginning of the period for extracting the exchange rate
+         :param date_to: end of period to retrieve exchange rates
          :param currency_codes: list with currencies codes
          :param table_name: tables name for insert values
          """
-        currencies = self._request_and_parse(date, currency_codes)
-        for curr in currencies:
-            value = currencies[curr]
-            data = (date, curr, "USD", value, self.source_code, datetime.now())
-            insert_data_into_table(table_name, data)
+        if date_from is None and date_to is None:
+            date_str = datetime.now().date().today().strftime('%Y-%m-%d')
+            currencies = self._request_and_parse(date_str, currency_codes)
+            for curr in currencies:
+                value = currencies[curr]
+                data = (date_str, curr, self.base_currency_code, value, self.source_code, datetime.now())
+                insert_data_into_table(table_name, data)
+
+        else:
+            daterange = pd.date_range(start=date_from, end=date_to)
+            for date in daterange:
+                date_str = date.strftime('%Y-%m-%d')
+                currencies = self._request_and_parse(date_str, currency_codes)
+                for curr in currencies:
+                    value = currencies[curr]
+                    data = (date, curr, self.base_currency_code, value, self.source_code, datetime.now())
+                    insert_data_into_table(table_name, data)
+                    time.sleep(1)
 
     @staticmethod
-    def _request_and_parse(date: str, currency_codes: List) -> Dict:
+    def _request_and_parse(date: str, currency_codes: List[str]) -> Dict[str, float]:
         """Parsing data from the site
         :param date: exchange rate conversion date
         :param currency_codes: list with currencies code
@@ -72,16 +88,7 @@ if __name__ == '__main__':
     args = parse_args()
     logger = get_logger()
     load_dotenv()
-    curr_layer = CurrencylayerClient(conn=mysql_connect())
     currency_codes = ['USDRUB', 'USDEUR', 'USDCNY']
 
-    if args['date_from'] is None and args['date_to'] is None:
-        date_str = date.today().strftime('%Y-%m-%d')
-        curr_layer.parse_and_save(date_str, currency_codes, args['table_name'])
-
-    else:
-        daterange = pd.date_range(start=args['date_from'], end=args['date_to'])
-        for date in daterange:
-            date_str = date.strftime('%Y-%m-%d')
-            curr_layer.parse_and_save(date_str, currency_codes, args['table_name'])
-            time.sleep(1)
+    curr_layer = CurrencylayerClient(conn=mysql_connect())
+    curr_layer.parse_and_save(currency_codes, args['table_name'], args['date_from'], args['date_to'])
