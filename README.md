@@ -7,13 +7,22 @@
 
 *Описание реализованных ETL-процессов*
 
-1. Скрипт `creating_and_populating_tables/create_create_tables.py` - создание таблиц:
-- слой Staging - создана таблица `stage_currencies`
-- слой Core - созданы таблицы `source_type`, `languages`, `exchange_rates`
-2. Скрипт `creating_and_populating_tables/populating_tables.py` заполняет данными таблицы `source_type` и `languages`
-3. Скрипт `raw/crb_client.py` парсит данные о курсе рубля и конвертации в `USD, EUR, CNY` с сайта ЦБ РФ и сохраняет сырые данные в таблицу `stage_currencies`
-4. Скрипт `raw/currencylayer_client.py` парсит данные о курсе доллара и конвертации в `RUB, EUR, CNY` с сайта https://currencylayer.com/ и сохраняет сырые данные в таблицу `stage_currencies`
-5. Скрипт `data_mart/create_and_write_tables` формирует витринные таблицы для анализа `dim_currencies_rus`, `dim_currencies_rus`, `dim_currencies_eng`
+Staging:
+1. `staging/ddl/raw_cb_currencies.sql` - создание таблицы `raw.cb_currencies`
+2. `staging/ddl/raw_currencylayer_currencies.sql` - создание таблицы `raw.cyrrencylayer_currencies`
+3. `staging/crb/crb_client.py` парсит данные о курсе рубля и конвертации в `USD, EUR, CNY` с сайта ЦБ РФ и сохраняет сырые данные в таблицу `raw.cb_currencies`
+4. `staging/currencylayer/currencylayer_client.py` парсит данные о курсе рубля и конвертации в `USD, EUR, CNY` с сайта https://currencylayer.com/ и сохраняет сырые данные в таблицу `raw.cyrrencylayer_currencies`
 
-#### Чтобы запустить запись в staging по расписанию, необходимо выполнить команду `cron 0 12 * * * python3 /path_file/data_engineer_test/raw/crb_client.py --days 1 --table stage_currencies`
-#### Чтобы запустить запись в staging по расписанию, необходимо выполнить команду `cron 0 12 * * * python3 /path_file/data_engineer_test/raw/currencylayer_client.py --days 1 --table stage_currencies`
+Core: 
+1. `core/ddl/core_languages.sql `создает и заполняет данными таблицу `core.languages`
+2. `core/ddl/core_source_type.sql `создает и заполняет данными таблицу `source_type`
+3. `core/ddl/core_exchange_rates.sql` создает таблицу `core.exchange_rates` и заполняет данными из `raw.cb_currencie` и `raw.cb_currencies`
+
+
+Data Mart:
+1. `dm/ddl/currencies_ru.sql` формирует витринные таблицы для анализа на русском языке `dm.currencies_ru `
+2. `dm/ddl/currencies_en.sql` формирует витринные таблицы для анализа на английском языке `dm.currencies_en `
+
+
+#### Чтобы запустить запись в staging по расписанию, необходимо выполнить команду `cron 0 12 * * * python3 /path_file/data_engineer_test/staging/crb/crb_client.py --table raw.cb_currencies`
+#### Чтобы запустить запись в staging по расписанию, необходимо выполнить команду `cron 0 12 * * * python3 /path_file/data_engineer_test/staging/currencylayer/currencylayer_client.py --table raw.cyrrencylayer_currencies`
